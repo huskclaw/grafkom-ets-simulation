@@ -5,6 +5,7 @@ import { Square } from './physics.js';
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl');
 
+
 if (!gl) {
     alert('Unable to initialize WebGL. Your browser may not support it.');
 }
@@ -55,7 +56,7 @@ gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 document.getElementById('simulationSelect').addEventListener('change', switchSimulation);
 document.getElementById('enablePlayerFish').addEventListener('change', () => {
     if (document.getElementById('simulationSelect').value === 'aquarium') {
-        startAquariumSimulation();
+        startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
     }
 });
 
@@ -63,14 +64,14 @@ document.getElementById('addFish').addEventListener('click', () => addFish(canva
 document.getElementById('removeFish').addEventListener('click', removeFish);
 
 // Start with the aquarium simulation by default
-startAquariumSimulation();
+startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
 
 function switchSimulation() {
     const simulationType = document.getElementById('simulationSelect').value;
     if (simulationType === 'aquarium') {
         document.getElementById('aquariumControls').style.display = 'block';
         document.getElementById('physicsControls').style.display = 'none';
-        startAquariumSimulation();
+        startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
     } else {
         document.getElementById('aquariumControls').style.display = 'none';
         document.getElementById('physicsControls').style.display = 'block';

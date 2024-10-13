@@ -6,9 +6,10 @@ const fishVertices = new Float32Array([
 ]);
 
 export class Fish {
-    constructor(x, y) {
+    constructor(x, y, canvas) {
         this.x = x;
         this.y = y;
+        this.canvas = canvas;
         this.dx = (Math.random() - 0.5) * 2;
         this.dy = (Math.random() - 0.5) * 2;
         this.rotation = Math.atan2(this.dy, this.dx);
@@ -20,8 +21,8 @@ export class Fish {
         this.x += this.dx;
         this.y += this.dy;
 
-        if (this.x < 0 || this.x > canvas.width) this.dx *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.dy *= -1;
+        if (this.x < 0 || this.x > this.canvas.width) this.dx *= -1;
+        if (this.y < 0 || this.y > this.canvas.height) this.dy *= -1;
 
         this.rotation = Math.atan2(this.dy, this.dx);
     }
@@ -38,8 +39,8 @@ export class Fish {
 }
 
 export class PlayerFish extends Fish {
-    constructor(x, y) {
-        super(x, y);
+    constructor(x, y, canvas) {
+        super(x, y, canvas);
         this.color = [1, 0, 0, 1];  // Red color for player fish
         this.scale = 1.2;  // Slightly larger than other fish
         this.speed = 3;
@@ -59,8 +60,15 @@ export class PlayerFish extends Fish {
         }
 
         // Keep player fish within canvas bounds
-        this.x = Math.max(0, Math.min(canvas.width, this.x));
-        this.y = Math.max(0, Math.min(canvas.height, this.y));
+        this.x = Math.max(0, Math.min(this.canvas.width, this.x));
+        this.y = Math.max(0, Math.min(this.canvas.height, this.y));
+        // Ensure canvas is accessed correctly using this.canvas
+        // if (this.canvas) {
+        //     this.x = Math.max(0, Math.min(this.canvas.width, this.x));
+        //     this.y = Math.max(0, Math.min(this.canvas.height, this.y));
+        // } else {
+        //     console.error("Canvas is undefined in PlayerFish");
+        // }
     }
 }
 
@@ -76,7 +84,7 @@ export function addFish(canvas) {
     do {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        newFish = new Fish(x, y);
+        newFish = new Fish(x, y, canvas);
     } while (isTooClose(newFish));
 
     fishes.push(newFish);
@@ -180,7 +188,7 @@ export function startAquariumSimulation(gl, canvas, positionBuffer, positionAttr
     }
 
     if (document.getElementById('enablePlayerFish').checked) {
-        playerFish = new PlayerFish(canvas.width / 2, canvas.height / 2);
+        playerFish = new PlayerFish(canvas.width / 2, canvas.height / 2, canvas);
     } else {
         playerFish = null;
     }
