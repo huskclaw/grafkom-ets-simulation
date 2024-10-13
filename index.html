@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebGL 2D Simulations</title>
-    <style>
-        canvas { border: 1px solid black; }
-        button, select, input { margin: 5px; }
-        .control-panel { margin-top: 10px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <select id="simulationSelect">
         <option value="aquarium">Aquarium Simulation</option>
         <option value="physics">Physics Collision</option>
+        <option value="maze">Maze Simulation</option>
     </select>
     <br>
     <canvas id="glCanvas" width="800" height="600"></canvas>
@@ -31,7 +28,13 @@
         <label>Friction: <input type="range" id="friction" min="0" max="1" step="0.01" value="0"></label>
         <button id="resetPhysics">Reset</button>
     </div>
-
-    <script src="script.js"></script>
+    <div id="mazeControls" class="control-panel" style="display: none;">
+        <button id="generateMaze">Generate Maze</button>
+        <button id="startBouncing">Start Bouncing</button>
+    </div>
+    <script type="module" src="script.js"></script>
+    <script type="module" src="aquarium.js"></script>
+    <script type="module" src="physics.js"></script>
+    <script type="module" src="maze.js"></script>
 </body>
 </html>
