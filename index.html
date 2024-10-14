@@ -10,6 +10,7 @@
     <select id="simulationSelect">
         <option value="aquarium">Aquarium Simulation</option>
         <option value="physics">Physics Collision</option>
+        <option value="fusion">Nuclear Fussion</option>
     </select>
     <br>
     <canvas id="glCanvas" width="800" height="600"></canvas>
@@ -28,7 +29,26 @@
         <button id="stopPhysics">Stop</button>
         <button id="resetPhysics">Restart</button>
     </div>
-
+    <div id="fusionControls" class="control-panel" style="display: none;">
+        <h3>Fusion Chain Reactor Simulation</h3>
+        <div>
+          <label for="controlRod">Control Rod Insertion:</label>
+          <input type="range" id="controlRod" min="0" max="100" value="50">
+          <span id="controlRodValue">50%</span>
+        </div>
+        <div>
+          <label for="cooling">Cooling Efficiency:</label>
+          <input type="range" id="cooling" min="0" max="100" value="50">
+          <span id="coolingValue">50%</span>
+        </div>
+        <button id="startFusion">Start Reaction</button>
+        <button id="stopFusion">Stop Reaction</button>
+        <div>
+          <p>Temperature: <span id="temperature">0</span> K</p>
+          <p>Power Output: <span id="powerOutput">0</span> MW</p>
+          <p>Reaction Rate: <span id="reactionRate">0</span> reactions/s</p>
+        </div>
+      </div>
     <script type="module" src="main.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import { vertexShaderSource, fragmentShaderSource } from './shaders.js';
 import { initializeAquarium, startAquariumSimulation, addFish, removeFish, stopAquariumSimulation } from './aquarium.js';
 import { initPhysicsSimulation, startPhysicsSimulation, stopPhysicsSimulation, resetPhysicsSimulation } from './physics.js';
+import { initFusionSimulation, startFusionSimulation, stopFusionSimulation, updateFusionSimulation } from './fusion.js';
 
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl');
@@ -81,6 +82,27 @@ document.getElementById('startPhysics').addEventListener('click', startPhysicsSi
 document.getElementById('stopPhysics').addEventListener('click', stopPhysicsSimulation);
 document.getElementById('resetPhysics').addEventListener('click', resetPhysicsSimulation);
 
+// Add event listeners for fusion controls
+// document.getElementById('controlRod').addEventListener('input', (e) => {
+//     document.getElementById('controlRodValue').textContent = `${e.target.value}%`;
+//     updateFusionSimulation();
+// });
+
+// document.getElementById('cooling').addEventListener('input', (e) => {
+//     document.getElementById('coolingValue').textContent = `${e.target.value}%`;
+//     updateFusionSimulation();
+// });
+
+// document.getElementById('startFusion').addEventListener('click', () => startFusionSimulation(gl, canvas));
+// document.getElementById('stopFusion').addEventListener('click', stopFusionSimulation);
+
+
+document.getElementById('startFusion').addEventListener('click', () => startFusionSimulation(gl, canvas));
+document.getElementById('stopFusion').addEventListener('click', stopFusionSimulation);
+
+document.getElementById('controlRod').addEventListener('input', updateFusionSimulation);
+document.getElementById('cooling').addEventListener('input', updateFusionSimulation);
+
 
 // Start with the aquarium simulation by default
 startAquariumSimulation(gl, canvas, positionBuffer);
@@ -100,22 +122,28 @@ startAquariumSimulation(gl, canvas, positionBuffer);
 
 function switchSimulation() {
     const simulationType = document.getElementById('simulationSelect').value;
+
+    document.getElementById('aquariumControls').style.display = 'none';
+    document.getElementById('physicsControls').style.display = 'none';
+    document.getElementById('fusionControls').style.display = 'none';
+
+    if (typeof stopAquariumSimulation === 'function') stopAquariumSimulation();
+    if (typeof stopPhysicsSimulation === 'function') stopPhysicsSimulation();
+    if (typeof stopFusionSimulation === 'function') stopFusionSimulation();
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
     
     if (simulationType === 'aquarium') {
         document.getElementById('aquariumControls').style.display = 'block';
-        document.getElementById('physicsControls').style.display = 'none';
-        
-        stopPhysicsSimulation(); // Ensure physics is stopped before switching
         initializeAquarium(gl, aquariumProgram);
         startAquariumSimulation(gl, canvas, positionBuffer);
         
     } else if (simulationType === 'physics') {
-        document.getElementById('aquariumControls').style.display = 'none';
         document.getElementById('physicsControls').style.display = 'block';
-        
-        stopAquariumSimulation(); // You need to define this to stop the aquarium (e.g., stopping animations)
         initPhysicsSimulation(gl, canvas);
-        // startPhysicsSimulation(gl, canvas);
+    } else if (simulationType === 'fusion') {
+        document.getElementById('fusionControls').style.display = 'block';
+        initFusionSimulation(gl, canvas);
     }
 }
 
