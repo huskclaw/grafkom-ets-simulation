@@ -1,6 +1,7 @@
 import { vertexShaderSource, fragmentShaderSource } from './shaders.js';
 import { initializeAquarium, startAquariumSimulation, addFish, removeFish, stopAquariumSimulation } from './aquarium.js';
 import { initPhysicsSimulation, startPhysicsSimulation, stopPhysicsSimulation, resetPhysicsSimulation } from './physics.js';
+import { initSeesawSimulation, startSeesawSimulation, resetSeesawSimulation, updateMasses, updateDistances } from './seesaw.js';
 
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl');
@@ -65,6 +66,27 @@ document.getElementById('startPhysics').addEventListener('click', startPhysicsSi
 document.getElementById('stopPhysics').addEventListener('click', stopPhysicsSimulation);
 document.getElementById('resetPhysics').addEventListener('click', resetPhysicsSimulation);
 
+// Seesaw simulation controls
+document.getElementById('simulationSelect').addEventListener('change', switchSimulation);
+document.getElementById('leftMass').addEventListener('input', updateSeesawMasses);
+document.getElementById('rightMass').addEventListener('input', updateSeesawMasses);
+document.getElementById('leftDistance').addEventListener('input', updateSeesawDistances);
+document.getElementById('rightDistance').addEventListener('input', updateSeesawDistances);
+document.getElementById('startSeesaw').addEventListener('click', startSeesawSimulation);
+document.getElementById('resetSeesaw').addEventListener('click', resetSeesawSimulation);
+
+// Seesaw-specific logic
+function updateSeesawMasses() {
+    const leftMass = parseFloat(document.getElementById('leftMass').value);
+    const rightMass = parseFloat(document.getElementById('rightMass').value);
+    updateMasses(leftMass, rightMass);
+}
+
+function updateSeesawDistances() {
+    const leftDistance = parseFloat(document.getElementById('leftDistance').value);
+    const rightDistance = parseFloat(document.getElementById('rightDistance').value);
+    updateDistances(leftDistance, rightDistance);
+}
 
 // Start with the aquarium simulation by default
 startAquariumSimulation(gl, canvas, positionBuffer);
@@ -74,9 +96,11 @@ function switchSimulation() {
 
     document.getElementById('aquariumControls').style.display = 'none';
     document.getElementById('physicsControls').style.display = 'none';
+    document.getElementById('seesawControls').style.display = 'none';
 
     if (typeof stopAquariumSimulation === 'function') stopAquariumSimulation();
     if (typeof stopPhysicsSimulation === 'function') stopPhysicsSimulation();
+    // if (typeof stopSeesawSimulation === 'function') stopSeesawSimulation();
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     
@@ -88,5 +112,9 @@ function switchSimulation() {
     } else if (simulationType === 'physics') {
         document.getElementById('physicsControls').style.display = 'block';
         initPhysicsSimulation(gl, canvas);
+
+    } else if (simulationType === 'seesaw') {
+        document.getElementById('seesawControls').style.display = 'block';
+        initSeesawSimulation(gl, canvas);
     }
 }

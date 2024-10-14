@@ -38,6 +38,7 @@ class Square {
     }
 
     draw() {
+        console.log('Drawing seesaw at:', this.x, this.y, ' with scale:', this.scale, 'and angle:', this.angle);
         gl.bufferData(gl.ARRAY_BUFFER, squareVertices, gl.STATIC_DRAW);
         gl.uniform4fv(colorUniformLocation, this.color);
         gl.uniform2f(translationUniformLocation, this.x, this.canvas.height / 2);
