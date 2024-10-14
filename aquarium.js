@@ -232,8 +232,9 @@ export function detectCollisions(gl, canvas, positionBuffer) {
             if (distance < 30) {
                 gameOver = true;
                 alert(`Game Over! You survived for ${Math.floor((Date.now() - startTime) / 1000)} seconds.`);
-                // resetPlayerFish(canvas);  // Reset player fish position
-                startAquariumSimulation(gl, canvas, positionBuffer);  // Restart the game
+                // Reset fish speed after game over
+                fishes.forEach(fish => fish.resetSpeed());
+                startAquariumSimulation(gl, canvas, positionBuffer); // Restart the game
                 return;
             }
         }
@@ -324,6 +325,11 @@ function handleKeyUp(event) {
 }
 
 export function startAquariumSimulation(gl, canvas, positionBuffer) {
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;  // Ensure it’s cleared
+    }
+
     fishes.length = 0;
     gameOver = false;
     startTime = Date.now();
