@@ -26,8 +26,10 @@ export class Fish {
 
         this.rotation = Math.atan2(this.dy, this.dx);
     }
-    
+
     draw(gl) {
+        if (!program) return; // Exit if the program has been nullified
+
         gl.bufferData(gl.ARRAY_BUFFER, fishVertices, gl.STATIC_DRAW);
         gl.uniform4fv(colorUniformLocation, this.color);
         gl.uniform2f(translationUniformLocation, this.x, this.y);
@@ -154,9 +156,9 @@ export function updateScore() {
 }
 
 export function renderAquarium(gl, canvas, positionBuffer) {
+    if (!program) return; // Exit if the program has been nullified
     // Ensure the correct program is being used
-    // gl.useProgram(program);  // Ensure you use the right program for aquarium rendering
-    
+    gl.useProgram(program);  // Ensure you use the right program for aquarium rendering
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.enableVertexAttribArray(positionAttributeLocation);
@@ -187,6 +189,7 @@ let colorUniformLocation;
 let translationUniformLocation;
 let rotationUniformLocation;
 let scaleUniformLocation;
+let animationFrameId;
 
 export function initializeAquarium(gl, newProgram) {
     program = newProgram;
@@ -226,5 +229,16 @@ export function startAquariumSimulation(gl, canvas, positionBuffer) {
 
 export function stopAquariumSimulation() {
     // This will cancel any running animation frame and stop the game loop.
-    gameOver = true;
+    // gameOver = true;
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    // Nullify WebGL-related variables
+    program = null;
+    positionAttributeLocation = null;
+    colorUniformLocation = null;
+    translationUniformLocation = null;
+    rotationUniformLocation = null;
+    scaleUniformLocation = null;
 }
