@@ -42,7 +42,6 @@ class Square {
         gl.uniform4fv(colorUniformLocation, this.color);
         gl.uniform2f(translationUniformLocation, this.x, this.canvas.height / 2);
         gl.uniform1f(scaleUniformLocation, this.size);
-
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
 
@@ -88,10 +87,12 @@ function createShader(gl, type, source) {
 export function initPhysicsSimulation(newGL, newCanvas) {
     gl = newGL;
     canvas = newCanvas
-    const mass1 = parseFloat(document.getElementById('mass1').value);  // Get mass 1 value from input
-    const mass2 = parseFloat(document.getElementById('mass2').value);  // Get mass 2 value from input
-    square1 = new Square(200, canvas.height / 2, mass1, false, canvas);  // Stationary square
-    square2 = new Square(600, canvas.height / 2, mass2, true, canvas);   // Moving square
+    updateSquares();
+
+    // const mass1 = parseFloat(document.getElementById('mass1').value);  // Get mass 1 value from input
+    // const mass2 = parseFloat(document.getElementById('mass2').value);  // Get mass 2 value from input
+    // square1 = new Square(200, canvas.height / 2, mass1, false, canvas);  // Stationary square
+    // square2 = new Square(600, canvas.height / 2, mass2, true, canvas);   // Moving square
 
     program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
     gl.useProgram(program);
@@ -105,6 +106,19 @@ export function initPhysicsSimulation(newGL, newCanvas) {
     gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), canvas.width, canvas.height);
 
     renderPhysics(); // Render initial state without starting animation
+}
+
+function updateSquares() {
+    const mass1 = parseFloat(document.getElementById('mass1').value);
+    const mass2 = parseFloat(document.getElementById('mass2').value);
+    
+    if (!square1 || !square2) {
+        square1 = new Square(200, canvas.height / 2, mass1, false, canvas);
+        square2 = new Square(600, canvas.height / 2, mass2, true, canvas);
+    } else {
+        square1.mass = mass1;
+        square2.mass = mass2;
+    }
 }
 
 // Handle square collisions
@@ -134,8 +148,8 @@ function renderPhysics() {
 
     handleCollision();
 
-    square1.draw(gl, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation);
-    square2.draw(gl, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation);
+    square1.draw();
+    square2.draw();
 
     if (physicsRunning) {
         animationFrameId = requestAnimationFrame(() => renderPhysics(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation));
@@ -161,6 +175,7 @@ export function startPhysicsSimulation(gl, canvas) {
         // gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), canvas.width, canvas.height);
 
         // renderPhysics(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation);
+        updateSquares();
         renderPhysics();
     }
 }
@@ -176,6 +191,7 @@ export function stopPhysicsSimulation() {
 // Reset and restart the physics simulation
 export function resetPhysicsSimulation(gl, canvas) {
     stopPhysicsSimulation();  // Stop the current simulation
+    updateSquares();
     square1.reset();
     square2.reset();
     // startPhysicsSimulation(gl, canvas);  // Restart with initial conditions
