@@ -1,7 +1,7 @@
 import { vertexShaderSource, fragmentShaderSource } from './shaders.js';
 import { initializeAquarium, startAquariumSimulation, addFish, removeFish, stopAquariumSimulation } from './aquarium.js';
 import { initPhysicsSimulation, startPhysicsSimulation, stopPhysicsSimulation, resetPhysicsSimulation } from './physics.js';
-import { initSeesawSimulation, startSeesawSimulation, resetSeesawSimulation, updateMasses, updateDistances } from './seesaw.js';
+import { initSeesawSimulation, startSeesawSimulation, resetSeesawSimulation, updateMasses, updateDistances, stopSeesawSimulation } from './seesaw.js';
 
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl');
@@ -100,7 +100,7 @@ function switchSimulation() {
 
     if (typeof stopAquariumSimulation === 'function') stopAquariumSimulation();
     if (typeof stopPhysicsSimulation === 'function') stopPhysicsSimulation();
-    // if (typeof stopSeesawSimulation === 'function') stopSeesawSimulation();
+    if (typeof stopSeesawSimulation === 'function') stopSeesawSimulation();
 
     gl.clear(gl.COLOR_BUFFER_BIT);
     
@@ -116,5 +116,7 @@ function switchSimulation() {
     } else if (simulationType === 'seesaw') {
         document.getElementById('seesawControls').style.display = 'block';
         initSeesawSimulation(gl, canvas);
+        // gl.useProgram(seesawProgram); // Ensure seesaw shaders are used
+        startSeesawSimulation();
     }
 }

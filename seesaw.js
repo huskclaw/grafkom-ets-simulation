@@ -23,15 +23,17 @@ class Seesaw {
         this.width = 300;    // Seesaw board width (scaling factor will be applied)
         this.height = 10;    // Seesaw board thickness (scaling factor will be applied)
         this.scale = 1.0;    // Overall scale, applied as float
+        this.color = [0, 1, 0, 1];
     }
 
     draw() {
         // console.log('Drawing seesaw at:', this.x, this.y, ' with scale:', this.scale, 'and angle:', this.angle);
         gl.bufferData(gl.ARRAY_BUFFER, rectangleVertices, gl.STATIC_DRAW);
-        gl.uniform2f(translationUniformLocation, this.x, this.y);  // u_translation is vec2
-        gl.uniform1f(rotationUniformLocation, this.angle);         // u_rotation is float
-        gl.uniform1f(scaleUniformLocation, this.scale);            // u_scale is float (applied uniformly to both dimensions)
-        gl.uniform4fv(colorUniformLocation, [0.6, 0.4, 0.2, 1.0]);  // Brown for the board
+        gl.uniform2f(translationUniformLocation, this.x, this.y);  // Position
+        gl.uniform1f(rotationUniformLocation, this.angle);         // Rotation (seesaw angle)
+        gl.uniform1f(scaleUniformLocation, this.scale);            // Scale
+        gl.uniform4fv(colorUniformLocation, this.color);           // Color (for weights and seesaw)
+
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
 }
@@ -90,13 +92,14 @@ export function initSeesawSimulation(newGL, newCanvas) {
 
     // Enable the position attribute
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, rectangleVertices, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(positionAttributeLocation);
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
     // Initialize the seesaw and weights
     seesaw = new Seesaw(canvas.width / 2, canvas.height / 2, 0);  // Centered, balanced
     leftWeight = new Weight(canvas.width / 2 - 100, 2, 10, [1.0, 0.0, 0.0, 1.0]);  // Red weight
-    rightWeight = new Weight(canvas.width / 2 + 100, 2, 10, [0.0, 0.0, 1.0, 1.0]);  // Blue weight
+    rightWeight = new Weight(canvas.width / 2 + 100, 2, 10, [0.0, 1.0, 0.0, 1.0]);  // Green weight
 
     renderSeesaw();  // Render initial state without animation
 }
