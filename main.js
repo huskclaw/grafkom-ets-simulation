@@ -1,6 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from './shaders.js';
 import { startAquariumSimulation, addFish, removeFish, Fish, PlayerFish } from './aquarium.js';
-import { Square } from './physics.js';
+import { startPhysicsSimulation, stopPhysicsSimulation, resetPhysicsSimulation } from './physics.js';
 
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl');
@@ -75,6 +75,6 @@ function switchSimulation() {
     } else {
         document.getElementById('aquariumControls').style.display = 'none';
         document.getElementById('physicsControls').style.display = 'block';
-        startPhysicsSimulation();
+        startPhysicsSimulation(gl, canvas);
     }
 }
