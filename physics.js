@@ -4,6 +4,9 @@ let square1, square2;
 let physicsRunning = false;
 let animationFrameId;
 let program;  // WebGL program to hold the shaders
+let gl, canvas;
+let positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation;
+
 
 const squareVertices = new Float32Array([
     -0.5, -0.5,
@@ -14,9 +17,11 @@ const squareVertices = new Float32Array([
 
 class Square {
     constructor(x, y, mass, isMoving, canvas) {
+        this.initialX = x;
         this.x = x;
         this.y = y;
         this.mass = mass;
+        this.initialVelocity = isMoving ? -2 : 0;
         this.velocity = isMoving ? -2 : 0;  // Initial velocity for moving square
         this.color = isMoving ? [0, 1, 0, 1] : [1, 0, 0, 1];  // Green for moving, Red for still
         this.size = 50;  // Size of the square
@@ -32,13 +37,18 @@ class Square {
         }
     }
 
-    draw(gl, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation) {
+    draw() {
         gl.bufferData(gl.ARRAY_BUFFER, squareVertices, gl.STATIC_DRAW);
         gl.uniform4fv(colorUniformLocation, this.color);
         gl.uniform2f(translationUniformLocation, this.x, this.canvas.height / 2);
         gl.uniform1f(scaleUniformLocation, this.size);
 
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+    }
+
+    reset() {
+        this.x = this.initialX;
+        this.velocity = this.initialVelocity;
     }
 }
 
@@ -75,11 +85,26 @@ function createShader(gl, type, source) {
 }
 
 // Initialize the physics simulation with two squares
-export function initPhysicsSimulation(canvas) {
+export function initPhysicsSimulation(newGL, newCanvas) {
+    gl = newGL;
+    canvas = newCanvas
     const mass1 = parseFloat(document.getElementById('mass1').value);  // Get mass 1 value from input
     const mass2 = parseFloat(document.getElementById('mass2').value);  // Get mass 2 value from input
     square1 = new Square(200, canvas.height / 2, mass1, false, canvas);  // Stationary square
     square2 = new Square(600, canvas.height / 2, mass2, true, canvas);   // Moving square
+
+    program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
+    gl.useProgram(program);
+
+    positionBuffer = gl.createBuffer();
+    positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+    colorUniformLocation = gl.getUniformLocation(program, 'u_color');
+    translationUniformLocation = gl.getUniformLocation(program, 'u_translation');
+    scaleUniformLocation = gl.getUniformLocation(program, 'u_scale');
+
+    gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), canvas.width, canvas.height);
+
+    renderPhysics(); // Render initial state without starting animation
 }
 
 // Handle square collisions
@@ -97,7 +122,7 @@ function handleCollision() {
 }
 
 // Render the physics simulation
-function renderPhysics(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation) {
+function renderPhysics() {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.enableVertexAttribArray(positionAttributeLocation);
@@ -121,34 +146,38 @@ function renderPhysics(gl, canvas, positionBuffer, positionAttributeLocation, co
 export function startPhysicsSimulation(gl, canvas) {
     if (!physicsRunning) {
         physicsRunning = true;
-        initPhysicsSimulation(canvas);  // Initialize the squares
+        // initPhysicsSimulation(canvas);  // Initialize the squares
 
-        // Create the WebGL program using imported shaders
-        program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
-        gl.useProgram(program);
+        // // Create the WebGL program using imported shaders
+        // program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
+        // gl.useProgram(program);
 
-        const positionBuffer = gl.createBuffer();
-        const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-        const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
-        const translationUniformLocation = gl.getUniformLocation(program, 'u_translation');
-        const scaleUniformLocation = gl.getUniformLocation(program, 'u_scale');
+        // const positionBuffer = gl.createBuffer();
+        // const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+        // const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
+        // const translationUniformLocation = gl.getUniformLocation(program, 'u_translation');
+        // const scaleUniformLocation = gl.getUniformLocation(program, 'u_scale');
 
-        gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), canvas.width, canvas.height);
+        // gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), canvas.width, canvas.height);
 
-        renderPhysics(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation);
+        // renderPhysics(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation);
+        renderPhysics();
     }
 }
 
 // Stop the physics simulation
 export function stopPhysicsSimulation() {
-    if (physicsRunning) {
-        physicsRunning = false;
-        cancelAnimationFrame(animationFrameId);  // Stop the simulation
-    }
+    // if (physicsRunning) {
+    physicsRunning = false;
+    cancelAnimationFrame(animationFrameId);  // Stop the simulation
+    // }
 }
 
 // Reset and restart the physics simulation
 export function resetPhysicsSimulation(gl, canvas) {
     stopPhysicsSimulation();  // Stop the current simulation
-    startPhysicsSimulation(gl, canvas);  // Restart with initial conditions
+    square1.reset();
+    square2.reset();
+    // startPhysicsSimulation(gl, canvas);  // Restart with initial conditions
+    renderPhysics(); // Render the reset state
 }

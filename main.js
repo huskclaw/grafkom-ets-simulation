@@ -1,6 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from './shaders.js';
 import { initializeAquarium, startAquariumSimulation, addFish, removeFish, stopAquariumSimulation } from './aquarium.js';
-import { startPhysicsSimulation, stopPhysicsSimulation, resetPhysicsSimulation } from './physics.js';
+import { initPhysicsSimulation, startPhysicsSimulation, stopPhysicsSimulation, resetPhysicsSimulation } from './physics.js';
 
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl');
@@ -72,8 +72,15 @@ document.getElementById('enablePlayerFish').addEventListener('change', () => {
     }
 });
 
+// Aquarium simulation controls
 document.getElementById('addFish').addEventListener('click', () => addFish(canvas));
 document.getElementById('removeFish').addEventListener('click', removeFish);
+
+// Physics simulation controls
+document.getElementById('startPhysics').addEventListener('click', startPhysicsSimulation);
+document.getElementById('stopPhysics').addEventListener('click', stopPhysicsSimulation);
+document.getElementById('resetPhysics').addEventListener('click', resetPhysicsSimulation);
+
 
 // Start with the aquarium simulation by default
 startAquariumSimulation(gl, canvas, positionBuffer);
@@ -107,8 +114,8 @@ function switchSimulation() {
         document.getElementById('physicsControls').style.display = 'block';
         
         stopAquariumSimulation(); // You need to define this to stop the aquarium (e.g., stopping animations)
-        // initPhysicsSimulation(gl);
-        startPhysicsSimulation(gl, canvas);
+        initPhysicsSimulation(gl, canvas);
+        // startPhysicsSimulation(gl, canvas);
     }
 }
 
