@@ -64,7 +64,9 @@ export class PlayerFish extends Fish {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
 
-        if (distance > 0.01) {
+
+
+        if (distance > 0.1) {
             // this.x += (dx / distance) * this.speed;
             // this.y += (dy / distance) * this.speed;
             // this.rotation = Math.atan2(dy, dx);
@@ -75,16 +77,17 @@ export class PlayerFish extends Fish {
             this.y += moveY;
 
             // Calculate the target rotation based on movement direction
-            const targetRotation = Math.atan2(moveY, moveX);
+            // const targetRotation = Math.atan2(moveY, moveX);
 
             // Smooth the rotation using a fixed rotation speed
-            const rotationSpeed = 0.05;  // Adjust for smoothness (smaller = smoother)
-            const deltaRotation = targetRotation - this.rotation;
+            // const rotationSpeed = 0.1;  // Adjust for smoothness (smaller = smoother)
+            // this.rotation = this.smoothRotate(this.rotation, targetRotation, rotationSpeed);
+            // const deltaRotation = targetRotation - this.rotation;
 
             // Ensure the rotation is in the shortest direction
-            if (Math.abs(deltaRotation) > Math.PI) {
-                this.rotation += deltaRotation > 0 ? -2 * Math.PI : 2 * Math.PI;
-            }
+            // if (Math.abs(deltaRotation) > Math.PI) {
+            //     this.rotation += deltaRotation > 0 ? -2 * Math.PI : 2 * Math.PI;
+            // }
 
             // this.targetRotation;
 
@@ -99,10 +102,47 @@ export class PlayerFish extends Fish {
             // this.rotation = this.rotation + (this.targetRotation - this.rotation) * rotationSpeed;
 
             // Gradually rotate towards the target rotation
-            this.rotation += deltaRotation * rotationSpeed;
+            // this.rotation += deltaRotation * rotationSpeed;
+        }
+        
+        const speed = 3;
     
+        // Determine movement based on key presses
+        if (keys['ArrowUp']) {
+            this.y -= speed;
+            this.rotation = -Math.PI / 2;  // Facing up
+        }
+        if (keys['ArrowDown']) {
+            this.y += speed;
+            this.rotation = Math.PI / 2;  // Facing down
+        }
+        if (keys['ArrowLeft']) {
+            this.x -= speed;
+            this.rotation = Math.PI;  // Facing left
+        }
+        if (keys['ArrowRight']) {
+            this.x += speed;
+            this.rotation = 0;  // Facing right
         }
 
+        // If diagonal movement, adjust the rotation accordingly
+        if (keys['ArrowUp'] && keys['ArrowRight']) {
+            this.rotation = -Math.PI / 4;  // Facing up-right
+        }
+        if (keys['ArrowUp'] && keys['ArrowLeft']) {
+            this.rotation = -3 * Math.PI / 4;  // Facing up-left
+        }
+        if (keys['ArrowDown'] && keys['ArrowRight']) {
+            this.rotation = Math.PI / 4;  // Facing down-right
+        }
+        if (keys['ArrowDown'] && keys['ArrowLeft']) {
+            this.rotation = 3 * Math.PI / 4;  // Facing down-left
+        }
+
+        // Ensure player fish stays within canvas bounds
+        this.x = Math.max(0, Math.min(this.canvas.width, this.x));
+        this.y = Math.max(0, Math.min(this.canvas.height, this.y));
+        
         // Keep player fish within canvas bounds
         this.x = Math.max(0, Math.min(this.canvas.width, this.x));
         this.y = Math.max(0, Math.min(this.canvas.height, this.y));
@@ -114,6 +154,18 @@ export class PlayerFish extends Fish {
         //     console.error("Canvas is undefined in PlayerFish");
         // }
     }
+
+    // smoothRotate(current, target, speed) {
+    //     // Compute the shortest path between angles
+    //     let delta = target - current;
+    
+    //     // Wrap the delta to be between -PI and PI for smooth rotation
+    //     delta = (delta + Math.PI) % (2 * Math.PI) - Math.PI;
+    
+    //     // Incrementally adjust the current angle towards the target
+    //     return current + delta * speed;
+    // }
+
 
     reset(x, y) {
         this.x = x;
