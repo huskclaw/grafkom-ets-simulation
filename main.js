@@ -1,5 +1,5 @@
 import { vertexShaderSource, fragmentShaderSource } from './shaders.js';
-import { startAquariumSimulation, addFish, removeFish, Fish, PlayerFish } from './aquarium.js';
+import { initializeAquarium, startAquariumSimulation, addFish, removeFish, stopAquariumSimulation } from './aquarium.js';
 import { startPhysicsSimulation, stopPhysicsSimulation, resetPhysicsSimulation } from './physics.js';
 
 const canvas = document.getElementById('glCanvas');
@@ -35,14 +35,15 @@ if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     console.error('Unable to initialize the shader program: ' + gl.getProgramInfoLog(program));
 }
 
-gl.useProgram(program);
+initializeAquarium(gl, program);
+// gl.useProgram(program);
 
-const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+// const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 const resolutionUniformLocation = gl.getUniformLocation(program, 'u_resolution');
-const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
-const translationUniformLocation = gl.getUniformLocation(program, 'u_translation');
-const rotationUniformLocation = gl.getUniformLocation(program, 'u_rotation');
-const scaleUniformLocation = gl.getUniformLocation(program, 'u_scale');
+// const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
+// const translationUniformLocation = gl.getUniformLocation(program, 'u_translation');
+// const rotationUniformLocation = gl.getUniformLocation(program, 'u_rotation');
+// const scaleUniformLocation = gl.getUniformLocation(program, 'u_scale');
 
 const positionBuffer = gl.createBuffer();
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -56,7 +57,7 @@ gl.uniform2f(resolutionUniformLocation, gl.canvas.width, gl.canvas.height);
 document.getElementById('simulationSelect').addEventListener('change', switchSimulation);
 document.getElementById('enablePlayerFish').addEventListener('change', () => {
     if (document.getElementById('simulationSelect').value === 'aquarium') {
-        startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
+        startAquariumSimulation(gl, canvas, positionBuffer);
     }
 });
 
@@ -64,17 +65,37 @@ document.getElementById('addFish').addEventListener('click', () => addFish(canva
 document.getElementById('removeFish').addEventListener('click', removeFish);
 
 // Start with the aquarium simulation by default
-startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
+startAquariumSimulation(gl, canvas, positionBuffer);
+
+// function switchSimulation() {
+//     const simulationType = document.getElementById('simulationSelect').value;
+//     if (simulationType === 'aquarium') {
+//         document.getElementById('aquariumControls').style.display = 'block';
+//         document.getElementById('physicsControls').style.display = 'none';
+//         startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
+//     } else {
+//         document.getElementById('aquariumControls').style.display = 'none';
+//         document.getElementById('physicsControls').style.display = 'block';
+//         startPhysicsSimulation(gl, canvas);
+//     }
+// }
 
 function switchSimulation() {
     const simulationType = document.getElementById('simulationSelect').value;
+    
     if (simulationType === 'aquarium') {
         document.getElementById('aquariumControls').style.display = 'block';
         document.getElementById('physicsControls').style.display = 'none';
-        startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
-    } else {
+        
+        stopPhysicsSimulation(); // Ensure physics is stopped before switching
+        startAquariumSimulation(gl, canvas, positionBuffer);
+        
+    } else if (simulationType === 'physics') {
         document.getElementById('aquariumControls').style.display = 'none';
         document.getElementById('physicsControls').style.display = 'block';
+        
+        stopAquariumSimulation(); // You need to define this to stop the aquarium (e.g., stopping animations)
         startPhysicsSimulation(gl, canvas);
     }
 }
+

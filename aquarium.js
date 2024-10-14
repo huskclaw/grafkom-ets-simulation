@@ -26,14 +26,14 @@ export class Fish {
 
         this.rotation = Math.atan2(this.dy, this.dx);
     }
-
-    draw(gl, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation) {
+    
+    draw(gl) {
         gl.bufferData(gl.ARRAY_BUFFER, fishVertices, gl.STATIC_DRAW);
         gl.uniform4fv(colorUniformLocation, this.color);
         gl.uniform2f(translationUniformLocation, this.x, this.y);
         gl.uniform1f(rotationUniformLocation, this.rotation);
         gl.uniform1f(scaleUniformLocation, this.scale);
-
+    
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
 }
@@ -153,7 +153,10 @@ export function updateScore() {
     document.getElementById('score').textContent = `Time: ${elapsedTime}s`;
 }
 
-export function renderAquarium(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation) {
+export function renderAquarium(gl, canvas, positionBuffer) {
+    // Ensure the correct program is being used
+    // gl.useProgram(program);  // Ensure you use the right program for aquarium rendering
+    
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.enableVertexAttribArray(positionAttributeLocation);
@@ -162,26 +165,51 @@ export function renderAquarium(gl, canvas, positionBuffer, positionAttributeLoca
 
     fishes.forEach(fish => {
         fish.update();
-        fish.draw(gl, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
+        fish.draw(gl, positionBuffer);
     });
 
     if (playerFish) {
         playerFish.update();
-        playerFish.draw(gl, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
+        playerFish.draw(gl, positionBuffer);
     }
 
     detectCollisions(canvas);
     updateScore();
 
     if (!gameOver) {
-        requestAnimationFrame(() => renderAquarium(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation));
+        requestAnimationFrame(() => renderAquarium(gl, canvas, positionBuffer));
     }
 }
 
-export function startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation) {
+let program;
+let positionAttributeLocation;
+let colorUniformLocation;
+let translationUniformLocation;
+let rotationUniformLocation;
+let scaleUniformLocation;
+
+export function initializeAquarium(gl, newProgram) {
+    program = newProgram;
+    gl.useProgram(program);
+
+    positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
+    colorUniformLocation = gl.getUniformLocation(program, 'u_color');
+    translationUniformLocation = gl.getUniformLocation(program, 'u_translation');
+    rotationUniformLocation = gl.getUniformLocation(program, 'u_rotation');
+    scaleUniformLocation = gl.getUniformLocation(program, 'u_scale');
+}
+
+export function startAquariumSimulation(gl, canvas, positionBuffer) {
     fishes.length = 0;
     gameOver = false;
     startTime = Date.now();
+
+    gl.useProgram(program);  // Ensure you're using the aquarium program
+
+    // Clear the buffer for fresh rendering
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    gl.clearColor(0.1, 0.5, 0.9, 1.0);  // Set the blue background
+    
 
     for (let i = 0; i < 5; i++) {
         addFish(canvas);
@@ -193,5 +221,10 @@ export function startAquariumSimulation(gl, canvas, positionBuffer, positionAttr
         playerFish = null;
     }
 
-    renderAquarium(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
+    renderAquarium(gl, canvas, positionBuffer);
+}
+
+export function stopAquariumSimulation() {
+    // This will cancel any running animation frame and stop the game loop.
+    gameOver = true;
 }
