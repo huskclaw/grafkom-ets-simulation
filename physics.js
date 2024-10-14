@@ -89,11 +89,6 @@ export function initPhysicsSimulation(newGL, newCanvas) {
     canvas = newCanvas
     updateSquares();
 
-    // const mass1 = parseFloat(document.getElementById('mass1').value);  // Get mass 1 value from input
-    // const mass2 = parseFloat(document.getElementById('mass2').value);  // Get mass 2 value from input
-    // square1 = new Square(200, canvas.height / 2, mass1, false, canvas);  // Stationary square
-    // square2 = new Square(600, canvas.height / 2, mass2, true, canvas);   // Moving square
-
     program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
     gl.useProgram(program);
 
@@ -143,8 +138,8 @@ function renderPhysics() {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-    square1.update();  // Update square without friction
-    square2.update();  // Update square without friction
+    square1.update();  
+    square2.update();  
 
     handleCollision();
 
@@ -160,21 +155,6 @@ function renderPhysics() {
 export function startPhysicsSimulation(gl, canvas) {
     if (!physicsRunning) {
         physicsRunning = true;
-        // initPhysicsSimulation(canvas);  // Initialize the squares
-
-        // // Create the WebGL program using imported shaders
-        // program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
-        // gl.useProgram(program);
-
-        // const positionBuffer = gl.createBuffer();
-        // const positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
-        // const colorUniformLocation = gl.getUniformLocation(program, 'u_color');
-        // const translationUniformLocation = gl.getUniformLocation(program, 'u_translation');
-        // const scaleUniformLocation = gl.getUniformLocation(program, 'u_scale');
-
-        // gl.uniform2f(gl.getUniformLocation(program, 'u_resolution'), canvas.width, canvas.height);
-
-        // renderPhysics(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, scaleUniformLocation);
         updateSquares();
         renderPhysics();
     }
@@ -182,10 +162,8 @@ export function startPhysicsSimulation(gl, canvas) {
 
 // Stop the physics simulation
 export function stopPhysicsSimulation() {
-    // if (physicsRunning) {
     physicsRunning = false;
     cancelAnimationFrame(animationFrameId);  // Stop the simulation
-    // }
 }
 
 // Reset and restart the physics simulation
@@ -194,6 +172,5 @@ export function resetPhysicsSimulation(gl, canvas) {
     updateSquares();
     square1.reset();
     square2.reset();
-    // startPhysicsSimulation(gl, canvas);  // Restart with initial conditions
     renderPhysics(); // Render the reset state
 }
