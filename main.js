@@ -1,6 +1,6 @@
 import { vertexShaderSource, fragmentShaderSource } from './shaders.js';
-import { startAquariumSimulation, addFish, removeFish, Fish, PlayerFish } from './aquarium.js';
-import { Square } from './physics.js';
+import { startAquariumSimulation, addFish, removeFish } from './aquarium.js';
+import { startPhysicsSimulation, stopPhysicsSimulation, resetPhysicsSimulation } from './physics.js';
 
 const canvas = document.getElementById('glCanvas');
 const gl = canvas.getContext('webgl');
@@ -63,6 +63,12 @@ document.getElementById('enablePlayerFish').addEventListener('change', () => {
 document.getElementById('addFish').addEventListener('click', () => addFish(canvas));
 document.getElementById('removeFish').addEventListener('click', removeFish);
 
+
+// Set up event listeners for the physics controls
+document.getElementById('startPhysics').addEventListener('click', () => startPhysicsSimulation(gl, canvas));
+document.getElementById('stopPhysics').addEventListener('click', stopPhysicsSimulation);
+document.getElementById('restartPhysics').addEventListener('click', resetPhysicsSimulation(gl, canvas));
+
 // Start with the aquarium simulation by default
 startAquariumSimulation(gl, canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation);
 
@@ -75,6 +81,8 @@ function switchSimulation() {
     } else {
         document.getElementById('aquariumControls').style.display = 'none';
         document.getElementById('physicsControls').style.display = 'block';
-        startPhysicsSimulation();
+        startPhysicsSimulation(gl, canvas);
     }
 }
+
+
