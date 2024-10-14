@@ -15,6 +15,7 @@ export class Fish {
         this.rotation = Math.atan2(this.dy, this.dx);
         this.color = [Math.random(), Math.random(), Math.random(), 1];
         this.scale = 1;
+        this.baseSpeed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
     }
 
     update() {
@@ -38,6 +39,13 @@ export class Fish {
     
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     }
+
+    resetSpeed() {
+        const currentSpeed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
+        const scaleFactor = this.baseSpeed / currentSpeed;
+        this.dx *= scaleFactor;
+        this.dy *= scaleFactor;
+    }
 }
 
 export class PlayerFish extends Fish {
@@ -55,10 +63,44 @@ export class PlayerFish extends Fish {
         const dy = this.targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance > 0.1) {
-            this.x += (dx / distance) * this.speed;
-            this.y += (dy / distance) * this.speed;
-            this.rotation = Math.atan2(dy, dx);
+
+        if (distance > 0.01) {
+            // this.x += (dx / distance) * this.speed;
+            // this.y += (dy / distance) * this.speed;
+            // this.rotation = Math.atan2(dy, dx);
+
+            const moveX = (dx / distance) * this.speed;
+            const moveY = (dy / distance) * this.speed;
+            this.x += moveX;
+            this.y += moveY;
+
+            // Calculate the target rotation based on movement direction
+            const targetRotation = Math.atan2(moveY, moveX);
+
+            // Smooth the rotation using a fixed rotation speed
+            const rotationSpeed = 0.05;  // Adjust for smoothness (smaller = smoother)
+            const deltaRotation = targetRotation - this.rotation;
+
+            // Ensure the rotation is in the shortest direction
+            if (Math.abs(deltaRotation) > Math.PI) {
+                this.rotation += deltaRotation > 0 ? -2 * Math.PI : 2 * Math.PI;
+            }
+
+            // this.targetRotation;
+
+            // if (Math.abs(moveX) > 0.1 || Math.abs(moveY) > 0.1) {
+            //     this.targetRotation = Math.atan2(moveY, moveX);
+            // }
+            // // Calculate the target rotation based on movement direction
+            // // const targetRotation = Math.atan2(moveY, moveX);
+
+            // // Smoothly interpolate the rotation (lerp)
+            // const rotationSpeed = 0.1;  // Adjust this value to control rotation smoothness
+            // this.rotation = this.rotation + (this.targetRotation - this.rotation) * rotationSpeed;
+
+            // Gradually rotate towards the target rotation
+            this.rotation += deltaRotation * rotationSpeed;
+    
         }
 
         // Keep player fish within canvas bounds
@@ -71,6 +113,14 @@ export class PlayerFish extends Fish {
         // } else {
         //     console.error("Canvas is undefined in PlayerFish");
         // }
+    }
+
+    reset(x, y) {
+        this.x = x;
+        this.y = y;
+        this.targetX = x;
+        this.targetY = y;
+        this.rotation = 0;
     }
 }
 
@@ -105,7 +155,7 @@ export function removeFish() {
     }
 }
 
-export function detectCollisions(canvas, positionBuffer, positionAttributeLocation, colorUniformLocation, translationUniformLocation, rotationUniformLocation, scaleUniformLocation) {
+export function detectCollisions(gl, canvas, positionBuffer) {
     if (gameOver) return;
 
     for (let i = 0; i < fishes.length; i++) {
@@ -130,6 +180,9 @@ export function detectCollisions(canvas, positionBuffer, positionAttributeLocati
             if (distance < 30) {
                 gameOver = true;
                 alert(`Game Over! You survived for ${Math.floor((Date.now() - startTime) / 1000)} seconds.`);
+                // resetPlayerFish(canvas);  // Reset player fish position
+                startAquariumSimulation(gl, canvas, positionBuffer);  // Restart the game
+                return;
             }
         }
     }
@@ -138,7 +191,7 @@ export function detectCollisions(canvas, positionBuffer, positionAttributeLocati
 export function updatePlayerMovement(canvas, keys, playerFish) {
     if (gameOver || !playerFish) return;
 
-    const speed = 5;
+    const speed = 2;
     if (keys['ArrowUp']) playerFish.targetY -= speed;
     if (keys['ArrowDown']) playerFish.targetY += speed;
     if (keys['ArrowLeft']) playerFish.targetX -= speed;
@@ -171,15 +224,17 @@ export function renderAquarium(gl, canvas, positionBuffer) {
     });
 
     if (playerFish) {
+        updatePlayerMovement(canvas, keys, playerFish);
         playerFish.update();
         playerFish.draw(gl, positionBuffer);
     }
 
-    detectCollisions(canvas);
+    detectCollisions(gl, canvas, positionBuffer);
     updateScore();
 
     if (!gameOver) {
-        requestAnimationFrame(() => renderAquarium(gl, canvas, positionBuffer));
+        // requestAnimationFrame(() => renderAquarium(gl, canvas, positionBuffer));
+        animationFrameId = requestAnimationFrame(() => renderAquarium(gl, canvas, positionBuffer));
     }
 }
 
@@ -190,6 +245,7 @@ let translationUniformLocation;
 let rotationUniformLocation;
 let scaleUniformLocation;
 let animationFrameId;
+let keys = {};
 
 export function initializeAquarium(gl, newProgram) {
     program = newProgram;
@@ -200,6 +256,19 @@ export function initializeAquarium(gl, newProgram) {
     translationUniformLocation = gl.getUniformLocation(program, 'u_translation');
     rotationUniformLocation = gl.getUniformLocation(program, 'u_rotation');
     scaleUniformLocation = gl.getUniformLocation(program, 'u_scale');
+
+    // Add event listeners for keydown and keyup
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+}
+
+
+function handleKeyDown(event) {
+    keys[event.key] = true;
+}
+
+function handleKeyUp(event) {
+    keys[event.key] = false;
 }
 
 export function startAquariumSimulation(gl, canvas, positionBuffer) {
@@ -218,13 +287,39 @@ export function startAquariumSimulation(gl, canvas, positionBuffer) {
         addFish(canvas);
     }
 
+    // if (document.getElementById('enablePlayerFish').checked) {
+    //     playerFish = new PlayerFish(canvas.width / 2, canvas.height / 2, canvas);
+    // } else {
+    //     playerFish = null;
+    // }
+    keys = {};
+    
+    // Reset speed for all fishes
+    fishes.forEach(fish => fish.resetSpeed());
+
+    resetPlayerFish(canvas);
+
+    // renderAquarium(gl, canvas, positionBuffer);
+    animationFrameId = requestAnimationFrame(() => renderAquarium(gl, canvas, positionBuffer));
+}
+
+function resetPlayerFish(canvas) {
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    // if (document.getElementById('enablePlayerFish').checked) {
+    //     playerFish = new PlayerFish(canvas.width / 2, canvas.height / 2, canvas);
+    // } else {
+    //     playerFish = null;
+    // }
     if (document.getElementById('enablePlayerFish').checked) {
-        playerFish = new PlayerFish(canvas.width / 2, canvas.height / 2, canvas);
+        if (playerFish) {
+            playerFish.reset(centerX, centerY);
+        } else {
+            playerFish = new PlayerFish(centerX, centerY, canvas);
+        }
     } else {
         playerFish = null;
     }
-
-    renderAquarium(gl, canvas, positionBuffer);
 }
 
 export function stopAquariumSimulation() {
@@ -234,6 +329,10 @@ export function stopAquariumSimulation() {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
+    // Remove event listeners when stopping the simulation
+    window.removeEventListener('keydown', handleKeyDown);
+    window.removeEventListener('keyup', handleKeyUp);
+
     // Nullify WebGL-related variables
     program = null;
     positionAttributeLocation = null;
