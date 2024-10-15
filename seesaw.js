@@ -21,7 +21,6 @@ class Seesaw {
         this.angle = angle;
         this.width = 300;
         this.height = 10;
-        this.scale = 1.0;
         this.color = [0.5, 0.35, 0.05, 1]; // Brown color for seesaw
     }
 
@@ -30,7 +29,33 @@ class Seesaw {
         gl.uniform1f(rotationUniformLocation, this.angle);
         gl.uniform1f(scaleUniformLocation, this.width);
         gl.uniform4fv(colorUniformLocation, this.color);
+
+        // Draw a thin rectangle
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -0.5, -0.5 * (this.height / this.width),
+             0.5, -0.5 * (this.height / this.width),
+             0.5,  0.5 * (this.height / this.width),
+            -0.5,  0.5 * (this.height / this.width)
+        ]), gl.STATIC_DRAW);
+
         gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
+        // Draw the fulcrum (pivot point)
+        const fulcrumSize = 20;
+        gl.uniform2f(translationUniformLocation, this.x, this.y + this.height / 2);
+        gl.uniform1f(rotationUniformLocation, 0);
+        gl.uniform1f(scaleUniformLocation, fulcrumSize);
+        gl.uniform4fv(colorUniformLocation, [0.2, 0.2, 0.2, 1]); // Dark gray color for fulcrum
+        
+        // Reset to square shape for fulcrum
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+            -0.5, -0.5,
+            0.5, -0.5,
+            0.5,  0.5,
+            -0.5,  0.5
+        ]), gl.STATIC_DRAW);
+        gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+
     }
 }
 
@@ -42,11 +67,13 @@ class Weight {
         this.mass = mass;
         this.size = 40;
         this.color = color;
-        this.scale = 1.0;
+        this.angle = 0;
     }
 
-    update(yOffset) {
+    update(yOffset, angle) {
+        // this.x = x
         this.y = yOffset;
+        this.angle = angle;
     }
 
     draw() {
@@ -103,8 +130,18 @@ function applyPhysics() {
 
 function updateWeightPositions() {
     const seesawHeight = Math.sin(seesaw.angle) * seesaw.width / 2;
-    leftWeight.update(seesaw.y - seesawHeight);
-    rightWeight.update(seesaw.y + seesawHeight);
+    const leftX = seesaw.x - Math.cos(seesaw.angle) * leftWeight.distance;
+    const leftY = seesaw.y - Math.sin(seesaw.angle) * leftWeight.distance;
+    
+    const rightX = seesaw.x + Math.cos(seesaw.angle) * rightWeight.distance;
+    const rightY = seesaw.y + Math.sin(seesaw.angle) * rightWeight.distance;
+    
+    // Update the weights' positions and angles
+    leftWeight.x = leftX;
+    leftWeight.update(leftY - leftWeight.size / 2, seesaw.angle);
+    
+    rightWeight.x = rightX;
+    rightWeight.update(rightY - rightWeight.size / 2, seesaw.angle);
 }
 
 function renderSeesaw() {
@@ -113,8 +150,8 @@ function renderSeesaw() {
 
     gl.useProgram(seesawProgram);
 
-    seesaw.draw();
     updateWeightPositions();
+    seesaw.draw();
     leftWeight.draw();
     rightWeight.draw();
 
