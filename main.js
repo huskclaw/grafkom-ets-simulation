@@ -116,7 +116,6 @@ function switchSimulation() {
     } else if (simulationType === 'seesaw') {
         document.getElementById('seesawControls').style.display = 'block';
         initSeesawSimulation(gl, canvas);
-        // gl.useProgram(seesawProgram); // Ensure seesaw shaders are used
         startSeesawSimulation();
     }
 }
