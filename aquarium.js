@@ -63,46 +63,11 @@ export class PlayerFish extends Fish {
         const dy = this.targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-
-
-
         if (distance > 0.1) {
-            // this.x += (dx / distance) * this.speed;
-            // this.y += (dy / distance) * this.speed;
-            // this.rotation = Math.atan2(dy, dx);
-
             const moveX = (dx / distance) * this.speed;
             const moveY = (dy / distance) * this.speed;
             this.x += moveX;
             this.y += moveY;
-
-            // Calculate the target rotation based on movement direction
-            // const targetRotation = Math.atan2(moveY, moveX);
-
-            // Smooth the rotation using a fixed rotation speed
-            // const rotationSpeed = 0.1;  // Adjust for smoothness (smaller = smoother)
-            // this.rotation = this.smoothRotate(this.rotation, targetRotation, rotationSpeed);
-            // const deltaRotation = targetRotation - this.rotation;
-
-            // Ensure the rotation is in the shortest direction
-            // if (Math.abs(deltaRotation) > Math.PI) {
-            //     this.rotation += deltaRotation > 0 ? -2 * Math.PI : 2 * Math.PI;
-            // }
-
-            // this.targetRotation;
-
-            // if (Math.abs(moveX) > 0.1 || Math.abs(moveY) > 0.1) {
-            //     this.targetRotation = Math.atan2(moveY, moveX);
-            // }
-            // // Calculate the target rotation based on movement direction
-            // // const targetRotation = Math.atan2(moveY, moveX);
-
-            // // Smoothly interpolate the rotation (lerp)
-            // const rotationSpeed = 0.1;  // Adjust this value to control rotation smoothness
-            // this.rotation = this.rotation + (this.targetRotation - this.rotation) * rotationSpeed;
-
-            // Gradually rotate towards the target rotation
-            // this.rotation += deltaRotation * rotationSpeed;
         }
         
         const speed = 3;
@@ -146,26 +111,7 @@ export class PlayerFish extends Fish {
         // Keep player fish within canvas bounds
         this.x = Math.max(0, Math.min(this.canvas.width, this.x));
         this.y = Math.max(0, Math.min(this.canvas.height, this.y));
-        // Ensure canvas is accessed correctly using this.canvas
-        // if (this.canvas) {
-        //     this.x = Math.max(0, Math.min(this.canvas.width, this.x));
-        //     this.y = Math.max(0, Math.min(this.canvas.height, this.y));
-        // } else {
-        //     console.error("Canvas is undefined in PlayerFish");
-        // }
     }
-
-    // smoothRotate(current, target, speed) {
-    //     // Compute the shortest path between angles
-    //     let delta = target - current;
-    
-    //     // Wrap the delta to be between -PI and PI for smooth rotation
-    //     delta = (delta + Math.PI) % (2 * Math.PI) - Math.PI;
-    
-    //     // Incrementally adjust the current angle towards the target
-    //     return current + delta * speed;
-    // }
-
 
     reset(x, y) {
         this.x = x;
@@ -345,11 +291,6 @@ export function startAquariumSimulation(gl, canvas, positionBuffer) {
         addFish(canvas);
     }
 
-    // if (document.getElementById('enablePlayerFish').checked) {
-    //     playerFish = new PlayerFish(canvas.width / 2, canvas.height / 2, canvas);
-    // } else {
-    //     playerFish = null;
-    // }
     keys = {};
     
     // Reset speed for all fishes
@@ -364,11 +305,6 @@ export function startAquariumSimulation(gl, canvas, positionBuffer) {
 function resetPlayerFish(canvas) {
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    // if (document.getElementById('enablePlayerFish').checked) {
-    //     playerFish = new PlayerFish(canvas.width / 2, canvas.height / 2, canvas);
-    // } else {
-    //     playerFish = null;
-    // }
     if (document.getElementById('enablePlayerFish').checked) {
         if (playerFish) {
             playerFish.reset(centerX, centerY);
@@ -382,7 +318,6 @@ function resetPlayerFish(canvas) {
 
 export function stopAquariumSimulation() {
     // This will cancel any running animation frame and stop the game loop.
-    // gameOver = true;
     if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
